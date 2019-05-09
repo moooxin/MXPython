@@ -22,6 +22,7 @@ foo.txt
 *.obj
 *.ipdb
 *.pdb
+*.idb
 *.localstorage
 .vscode/
 .vs/
