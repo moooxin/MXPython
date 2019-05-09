@@ -10,20 +10,35 @@ echo %root_dst_dir%\
 
 cd %root_src_dir%\
 
-set python_root_dir=%root_src_dir%\..\Python3.7.1\
+rem copy python2.7.13 bin ---------------------------------------------------------------
 
-rem debug 
-set dest_name=Release
+set dest_name=Release27
+
+set python_root_dir=%root_src_dir%\..\Python2.7.13\
 set dest_root_dir=%root_src_dir%\%dest_name%
+set pydir=ph27
 
 mkdir %dest_root_dir%
-mkdir %dest_root_dir%\ph
-mkdir %dest_root_dir%\ph\lib
-rem copy python bin ---------------------------------------------------------------
+mkdir %dest_root_dir%\%pydir%
+mkdir %dest_root_dir%\%pydir%\lib
 
 xcopy %python_root_dir%\bin\*.* %dest_root_dir% /e /h /y 
+xcopy %python_root_dir%\home\lib\*.* %dest_root_dir%\%pydir%\lib\ /e /h /y 
 
-xcopy %python_root_dir%\home\lib\*.* %dest_root_dir%\ph\lib\ /e /h /y 
+rem copy python3.7.1 bin ---------------------------------------------------------------
+
+set dest_name=Release
+
+set python_root_dir=%root_src_dir%\..\Python3.7.1\
+set dest_root_dir=%root_src_dir%\%dest_name%
+set pydir=ph37
+
+mkdir %dest_root_dir%
+mkdir %dest_root_dir%\%pydir%
+mkdir %dest_root_dir%\%pydir%\lib
+
+xcopy %python_root_dir%\bin\*.* %dest_root_dir% /e /h /y 
+xcopy %python_root_dir%\home\lib\*.* %dest_root_dir%\%pydir%\lib\ /e /h /y 
 
 pause
 
