@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <string>
 
-namespace mxpython
+namespace mxpy
 {
 	template<typename mx_py>
 	class MXPy

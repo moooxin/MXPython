@@ -1,9 +1,10 @@
 ﻿#include "stdafx.h"
+#if _PY_VER_==37
 #include "MXPython37.h"
 #include "MXStringKit.h"
+#include "MXPythonUtil.h"
 
-#if _PY_VER_==37
-namespace mxpython
+namespace mxpy
 {
 
 	MXPython37::MXPython37()
@@ -18,14 +19,14 @@ namespace mxpython
 			Py_Finalize();
 	}
 
-	bool MXPython37::Init(const CHAR* dir)
-	{
+    mxtoolkit::Result MXPython37::Initialize(const CHAR* dir)
+    {
 		//WCHAR filePath[MAX_PATH];
 		//::GetModuleFileNameW(NULL, filePath, MAX_PATH);
 		//::PathRemoveFileSpecW(filePath);
 
         std::wstring path;
-        mxtoolkit::AWConvert(dir, &path);
+        mxtoolkit::WAConvert<std::string,std::wstring>(dir, &path);
 
 		std::wstring python_home(path.c_str());
 		python_home += L"\\ph37\\";
@@ -39,27 +40,79 @@ namespace mxpython
 			PyErr_Print();
 			printf("\n");
 
-			return false;
+			RETURN_RESULT(false);
 		}
 
 		m_version = Py_GetVersion();
 		printf("python version:%s.\n", m_version.c_str());
 
-		return true;;
+		RETURN_RESULT(true);
 	}
 
-	bool MXPython37::RunFile(const CHAR* file)
+    mxtoolkit::Result MXPython37::Uninstall()
+    {
+        RETURN_RESULT(true);
+    }
+
+    mxtoolkit::Result MXPython37::ExcuteFile(const CHAR* file)
 	{
         if (!Py_IsInitialized())
-            return false;
+            RETURN_RESULT(false);
 
 		FILE *ff = ::_Py_fopen(file, "r+");
 		int res = PyRun_SimpleFileEx(ff, file, true);
 
 		PyErr_Print();
 
-		return true;
+        RETURN_RESULT(true);
 	}
+
+    mxtoolkit::Result MXPython37::ExcuteMethod(const CHAR* file, const CHAR* method, const CHAR* param, char** result)
+    {
+        if (!Py_IsInitialized())
+        {
+            RETURN_RESULT(false);
+        }
+
+        PyObject* pyModule = PyImport_ImportModule(file);
+        if (!pyModule)
+        {
+            RETURN_RESULT(false);
+        }
+
+        PyObject* pyMethod = PyObject_GetAttrString(pyModule, method);
+        if (!pyMethod)
+        {
+            RETURN_RESULT(false);
+        }
+
+        //调用函数
+        PyObject* retValue = PyObject_CallFunction(pyMethod, param);
+
+        PyErr_Print();
+
+        if (retValue)
+        {
+            char* retStr = nullptr;
+            PyArg_Parse(retValue, "s", &retStr);
+
+            if (retStr)
+            {
+                *result = MXPythonUtil::GetInstance()->AllocString(retStr);
+            }
+
+#ifdef NDEBUG
+            Py_DECREF(retValue);
+#endif
+        }
+
+#ifdef NDEBUG
+        // Clean up
+        Py_DECREF(pyModule);
+#endif
+        RETURN_RESULT(true);
+    }
+
 }
 
 #endif

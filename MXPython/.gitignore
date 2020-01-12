@@ -20,3 +20,5 @@ foo.txt
 .vscode/
 .vs/
 vld.txt
+Debug*/
+Release*/

@@ -26,10 +26,10 @@ int main(int argc, char* argv[])
 
     std::string s = "dasdas";
     std::wstring ss;
-    mxtoolkit::AWConvert(s.c_str(), &ss);
+    mxtoolkit::WAConvert<std::string,std::wstring>(s.c_str(), &ss);
     std::wcout << ss << std::endl;
     std::string sss;
-    mxtoolkit::AWConvert(ss.c_str(), &sss);
+    mxtoolkit::WAConvert<std::wstring,std::string>(ss.c_str(), &sss);
     std::cout << sss << std::endl;
 
 

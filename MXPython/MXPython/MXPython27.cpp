@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
-#include "MXPython27.h"
-
-
 #if _PY_VER_==27
+#include "mxpy27.h"
+
+
 MXPython27::MXPython27()
 {
 }
