@@ -3,6 +3,8 @@
 #include "MXPython37.h"
 #include "MXStringKit.h"
 #include "MXPythonUtil.h"
+#include "MXPath.h"
+#include "MXPyGILUtil.h"
 
 namespace mxpy
 {
@@ -34,9 +36,9 @@ namespace mxpy
 
 		Py_Initialize();
 		int ret = Py_IsInitialized();
-		if (ret != 0)
+		if (ret == 0)
 		{
-			printf("python init fail:\n");
+			printf("MXPython37::Initialize fail:\n");
 			PyErr_Print();
 			printf("\n");
 
@@ -44,39 +46,77 @@ namespace mxpy
 		}
 
 		m_version = Py_GetVersion();
-		printf("python version:%s.\n", m_version.c_str());
+		printf("MXPython37::Initialize Python Version:%s.\n", m_version.c_str());
 
 		RETURN_RESULT(true);
 	}
 
     mxtoolkit::Result MXPython37::Uninstall()
     {
+        if (Py_IsInitialized())
+        {
+            MXPyGILUtil pyGILUtil;
+            Py_Finalize();
+        }
+
         RETURN_RESULT(true);
     }
 
     mxtoolkit::Result MXPython37::ExcuteFile(const CHAR* file)
-	{
+    {
+        MXPyGILUtil pyGILUtil;
+        printf("MXPython37::ExcuteFile:%s.\n", file);
+
         if (!Py_IsInitialized())
             RETURN_RESULT(false);
 
-		FILE *ff = ::_Py_fopen(file, "r+");
-		int res = PyRun_SimpleFileEx(ff, file, true);
+		FILE *pyFile = ::_Py_fopen(file, "r+");
+        if (!pyFile)
+            RETURN_RESULT(false);
+
+		int res = PyRun_SimpleFileEx(pyFile, file, true);
 
 		PyErr_Print();
 
+        printf("MXPython37::ExcuteFile completed: %d.\n", res);
         RETURN_RESULT(true);
 	}
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const CHAR* file, const CHAR* method, const CHAR* param, char** result)
     {
+        MXPyGILUtil pyGILUtil;
+        printf("MXPython37::ExcuteMethod file:%s, method:%s.\n", file, method);
+
         if (!Py_IsInitialized())
         {
             RETURN_RESULT(false);
         }
 
-        PyObject* pyModule = PyImport_ImportModule(file);
+        std::string dir, name;
+        if (!mxtoolkit::Path::GetFilePathInfo(file, &dir, &name, nullptr))
+        {
+            RETURN_RESULT(false);
+        }
+
+        if (dir.empty())
+        {
+            PyRun_SimpleString("sys.path.append('./')");
+        }
+        else
+        {
+            int len = dir.length();
+            if(dir.at(len-1) == '\\')
+                dir.resize(dir.length()-1);
+
+            std::string pyCmd = "sys.path.append('" + dir;
+            pyCmd += "')";
+            PyRun_SimpleString(pyCmd.c_str());
+        }
+
+        PyObject* pyModule = PyImport_ImportModule(name.c_str());
         if (!pyModule)
         {
+            PyErr_Print();
             RETURN_RESULT(false);
         }
 
@@ -85,12 +125,16 @@ namespace mxpy
         {
             RETURN_RESULT(false);
         }
-
+        
         //调用函数
-        PyObject* retValue = PyObject_CallFunction(pyMethod, param);
+        PyObject* retValue = nullptr;
+        if (param)
+            retValue = PyObject_CallFunction(pyMethod, "s", param);
+        else
+            retValue = PyObject_CallObject(pyMethod, nullptr);
 
         PyErr_Print();
-
+        
         if (retValue)
         {
             char* retStr = nullptr;
@@ -101,6 +145,8 @@ namespace mxpy
                 *result = MXPythonUtil::GetInstance()->AllocString(retStr);
             }
 
+            //这里不一定是返回的字符串，所以清除这个格式化的错误
+            PyErr_Clear();
 #ifdef NDEBUG
             Py_DECREF(retValue);
 #endif
@@ -110,6 +156,7 @@ namespace mxpy
         // Clean up
         Py_DECREF(pyModule);
 #endif
+        printf("MXPython37::ExcuteMethod completed.\n");
         RETURN_RESULT(true);
     }
 

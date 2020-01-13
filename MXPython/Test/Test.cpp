@@ -5,12 +5,14 @@
 #include "MXDllExportDefine.h"
 #include "IMXPython.h"
 
+#include "Win32PathUtil.h"
+
 int main()
 {
     std::cout << "Hello World!\n";
 
     mxtoolkit::MXDllObject mxDllObj;
-    HMODULE webrequest_dll = MXInitDll(mxDllObj, "MXPython.dll");
+    HMODULE mxDll = MXInitDll(mxDllObj, "MXPython.dll");
 
     std::cout << "GetLastError: " << (int)GetLastError << std::endl;
     if (mxDllObj.dllInit)
@@ -31,19 +33,33 @@ int main()
             return 0;
     }
 
-    py37->Initialize("");
+    std::string exeDir = mxtoolkit::Win32App<std::string>::CurrentDirectory();
+    if (py37->Initialize(exeDir.c_str()))
+    {
+        std::string file = exeDir + "testMain.py";
+        py37->ExcuteFile(file.c_str());
+        file = exeDir + "test123.py";
+        py37->ExcuteMethod(file.c_str(), "Hello", nullptr, nullptr);
 
+        char* ret = nullptr;
+        py37->ExcuteMethod(file.c_str(), "GetStr", nullptr, &ret);
+        if (ret)
+        {
+            printf("%s\n",ret);            
+        }
 
+        py37->ExcuteMethod(file.c_str(), "PrintStr", "CPP.", nullptr);
+    }
 
-    
-    std::cout << "end 111.\n";
     py37->Uninstall();
 
-    std::cout << "end2222.\n";
     mxDllObj.dllUninit();
 
-    std::cout << "end3333333333333.\n";
-    FreeLibrary(webrequest_dll);
+    FreeLibrary(mxDll);
+
+    int i;
+    std::cin >> i;
+    return 0;
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

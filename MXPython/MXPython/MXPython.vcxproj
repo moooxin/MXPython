@@ -277,9 +277,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\MXToolkit\common\MXPath.h" />
     <ClInclude Include="..\..\..\MXToolkit\win32\Win32Module.h" />
     <ClInclude Include="IMXPython.h" />
     <ClInclude Include="MXPy.h" />
+    <ClInclude Include="MXPyGILUtil.h" />
     <ClInclude Include="MXPython27.h" />
     <ClInclude Include="MXPython37.h" />
     <ClInclude Include="MXPythonUtil.h" />
@@ -287,7 +289,9 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\MXToolkit\common\MXPath.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="MXPyGILUtil.cpp" />
     <ClCompile Include="MXPython27.cpp" />
     <ClCompile Include="MXPython37.cpp" />
     <ClCompile Include="MXPythonUtil.cpp" />

@@ -16,6 +16,9 @@
     <Filter Include="win32">
       <UniqueIdentifier>{12d5f8ab-e081-4e22-bf64-b6cfc2a26d24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{e3e83f41-51c9-494e-956e-3dedffd48b23}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -42,6 +45,12 @@
     <ClInclude Include="MXPythonUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\MXToolkit\common\MXPath.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="MXPyGILUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -57,6 +66,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MXPythonUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\MXToolkit\common\MXPath.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="MXPyGILUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
