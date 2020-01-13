@@ -8,6 +8,7 @@
 #include "MXSpdlog.h"
 
 #include "MXPython37.h"
+#include "MXPythonUtil.h"
 
 HMODULE g_hModule;
 
@@ -56,12 +57,19 @@ namespace mxpy
         mxtoolkit::Win32App<std::string>::CreateDirectory(fileDir);
 
 
-        MX_INIT_LOG(fileDir, "MXWebRequest");
+        MX_INIT_LOG(fileDir, "MXPython");
 
+        //--------------
         MXPython37::GetInstance()->InitInterface(DLL_VERSION.c_str());
         mxtoolkit::MXInterfaceInfo info = MXPython37::GetInstance()->GetInterfaceInfo();
         EXPORT_INTERFACE_LIST.emplace_back(info);
 
+        //--------------
+        MXPythonUtil::GetInstance()->InitInterface(DLL_VERSION.c_str());
+        info = MXPythonUtil::GetInstance()->GetInterfaceInfo();
+        EXPORT_INTERFACE_LIST.emplace_back(info);
+
+        //--------------
         DLL_EXPORT_INFO.interfaceCount = EXPORT_INTERFACE_LIST.size();
         DLL_EXPORT_INFO.version = DLL_VERSION.c_str();//当前时间戳
         DLL_EXPORT_INFO.interfaceInfo = &EXPORT_INTERFACE_LIST[0];

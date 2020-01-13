@@ -7,10 +7,13 @@
 
 #include "Win32PathUtil.h"
 
+
+
 int main()
 {
     std::cout << "Hello World!\n";
 
+    
     mxtoolkit::MXDllObject mxDllObj;
     HMODULE mxDll = MXInitDll(mxDllObj, "MXPython.dll");
 
