@@ -40,18 +40,23 @@ int main()
     if (py37->Initialize(exeDir.c_str()))
     {
         std::string file = exeDir + "testMain.py";
-        py37->ExcuteFile(file.c_str());
+        //py37->ExcuteFile(file.c_str());
         file = exeDir + "test123.py";
-        py37->ExcuteMethod(file.c_str(), "Hello", nullptr, nullptr);
 
-        char* ret = nullptr;
-        py37->ExcuteMethod(file.c_str(), "GetStr", nullptr, &ret);
-        if (ret)
-        {
-            printf("%s\n",ret);            
-        }
+//        py37->ExcuteMethod(file.c_str(), "Hello", nullptr, nullptr);
+//
+//         char* ret = nullptr;
+//         py37->ExcuteMethod(file.c_str(), "GetStr", nullptr, &ret);
+//         if (ret)
+//         {
+//             printf("%s\n",ret);            
+//         }
+// 
+//         py37->ExcuteMethod(file.c_str(), "PrintStr", "CPP.", nullptr);
 
-        py37->ExcuteMethod(file.c_str(), "PrintStr", "CPP.", nullptr);
+        py37->ExcuteMethod(file.c_str(), "testAdd", (int*)nullptr, "f,i,f",5.02, 2, (float)3);
+        //int ii[3] = { 1,2,3 };
+        //py37->ExcuteMethod(file.c_str(), "testAdd", ii, 3, nullptr);
     }
 
     py37->Uninstall();

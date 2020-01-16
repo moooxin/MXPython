@@ -8,6 +8,14 @@ namespace mxpy
 	{
 	public:
 		static const char* GetVersion() { return m_version.c_str(); }
+		static const char* GetHomePath() { return m_homePath.c_str(); }
+
+	protected:
+        static void InitMXPy(const char* ver, const char* home)
+        {
+            m_version = ver;
+            m_homePath = home;
+        }
 
 	protected:
 		static std::string m_homePath;

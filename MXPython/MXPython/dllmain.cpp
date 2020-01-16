@@ -55,19 +55,18 @@ namespace mxpy
         std::string fileDir(mxtoolkit::Win32App<std::string>::GetModuleDirectory(g_hModule));
         fileDir += mxtoolkit::MXTimeDate::ToString<std::string>("\\log\\%Y-%m-%d\\");
         mxtoolkit::Win32App<std::string>::CreateDirectory(fileDir);
+        
+        //MX_INIT_LOG(fileDir, "MXPython");
 
-
-        MX_INIT_LOG(fileDir, "MXPython");
-
+#if _PY_VER_==37
         //--------------
         MXPython37::GetInstance()->InitInterface(DLL_VERSION.c_str());
-        mxtoolkit::MXInterfaceInfo info = MXPython37::GetInstance()->GetInterfaceInfo();
-        EXPORT_INTERFACE_LIST.emplace_back(info);
+        EXPORT_INTERFACE_LIST.push_back(MXPython37::GetInstance()->GetInterfaceInfo());
+#endif
 
         //--------------
         MXPythonUtil::GetInstance()->InitInterface(DLL_VERSION.c_str());
-        info = MXPythonUtil::GetInstance()->GetInterfaceInfo();
-        EXPORT_INTERFACE_LIST.emplace_back(info);
+        EXPORT_INTERFACE_LIST.push_back(MXPythonUtil::GetInstance()->GetInterfaceInfo());
 
         //--------------
         DLL_EXPORT_INFO.interfaceCount = EXPORT_INTERFACE_LIST.size();
@@ -81,8 +80,10 @@ namespace mxpy
     {
         mxtoolkit::MXAutoLock aLock(EXPORT_FUNCTION_MUTEX);
 
+#if _PY_VER_==37
         MXPython37::GetInstance()->Uninstall();
         MXPython37::DestroyInstance();
+#endif
 
         MX_RELEASE_LOG();
         RETURN_RESULT(true);
