@@ -6,7 +6,6 @@
 namespace mxpy
 {
 
-#if _PY_VER_==37
     //----------------------------------------------------------------------------
     // IWebRequest,
     //----------------------------------------------------------------------------
@@ -29,7 +28,6 @@ namespace mxpy
         virtual mxtoolkit::Result ExcuteMethod(const char* file, const char* method, char** result, const char* paramFormat, ...) = 0;
 
     };
-#endif
 
     //ExcuteMethod 中 paramFormat 以 , 分割。格式化的类型翻译如下----------------------------------------
     //():tuple
