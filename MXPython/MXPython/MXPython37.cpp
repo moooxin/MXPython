@@ -31,8 +31,17 @@ namespace mxpy
         mxtoolkit::WAConvert<std::string,std::wstring>(dir, &path);
 
 		std::wstring python_home(path.c_str());
-		python_home += L"\\ph37\\";
-		Py_SetPythonHome(python_home.c_str());
+//         int pos = python_home.rfind(L'\\');
+//         int len = python_home.length();
+//         while (pos != std::wstring::npos && pos == (len-1))
+//         {
+//             python_home.resize(python_home.size() - 1);
+//             pos = python_home.rfind(L'\\');
+//             len = python_home.length();
+//         }
+//         python_home += L"\\ph37\\";
+
+        Py_SetPythonHome(python_home.c_str());
 
 		Py_Initialize();
 		int ret = Py_IsInitialized();
@@ -47,7 +56,10 @@ namespace mxpy
 
         mxtoolkit::WAConvert<std::wstring, std::string>(python_home.c_str(), &m_homePath);
         InitMXPy(Py_GetVersion(), m_homePath.c_str());
-        printf("MXPython37::Initialize Python Version:%s, home:%s.\n", m_version.c_str(), m_homePath.c_str());
+
+        printf("MXPython37::Initialize Completed !\n");
+        printf("Python Version : %s\n", m_version.c_str());
+        printf("Python Home: %s.\n", m_homePath.c_str());
 
 		RETURN_RESULT(true);
 	}
@@ -86,7 +98,7 @@ namespace mxpy
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, int param, int* result)
     {
-        CallMethod<int>(file, method, "i", param, [&](PyObject* retValue)
+        return CallMethod<int>(file, method, "i", param, [&](PyObject* retValue)
         {
             int retVal = 0;
             if (retValue && result)
@@ -95,8 +107,6 @@ namespace mxpy
             if (retValue && result)
                 *result = retVal;
         });
-
-        RETURN_RESULT(true);
     }
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, int* result, const char* paramFormat, ...)
@@ -119,7 +129,7 @@ namespace mxpy
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, float param, float* result)
     {
-        CallMethod<float>(file, method, "f", param, [&](PyObject* retValue)
+        return CallMethod<float>(file, method, "f", param, [&](PyObject* retValue)
         {
             float retVal = 0.0;
             if (retValue && result)
@@ -128,8 +138,6 @@ namespace mxpy
             if (retValue && result)
                 *result = retVal;
         });
-
-        RETURN_RESULT(true);
     }
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, float* result, const char* paramFormat, ...)
@@ -153,7 +161,7 @@ namespace mxpy
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, const char* param, char** result)
     {
-        CallMethod<const char*>(file, method, "s", param, [&](PyObject* retValue)
+        return CallMethod<const char*>(file, method, "s", param, [&](PyObject* retValue)
         {
             char* retVal = nullptr;
             if (retValue && result)
@@ -162,8 +170,6 @@ namespace mxpy
             if (retVal && result)
                 *result = MXPythonUtil::GetInstance()->AllocString(retVal);
         });
-
-        RETURN_RESULT(true);
     }
 
     mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, char** result, const char* paramFormat, ...)
@@ -200,6 +206,7 @@ namespace mxpy
             RETURN_RESULT(false);
         }
 
+        PyErr_Clear();
         std::string dir, name;
         if (!mxtoolkit::Path::GetFilePathInfo(file, &dir, &name, nullptr))
         {
@@ -211,6 +218,7 @@ namespace mxpy
         if (dir.empty())
         {
             PyRun_SimpleString("sys.path.append('./')");
+            PyErr_Print();
         }
         else
         {
@@ -218,9 +226,11 @@ namespace mxpy
             if (dir.at(len - 1) == '\\')
                 dir.resize(dir.length() - 1);
 
+            mxtoolkit::ReplaceString<std::string>(dir, "\\", "/");
             std::string pyCmd = "sys.path.append('" + dir;
             pyCmd += "')";
             PyRun_SimpleString(pyCmd.c_str());
+            PyErr_Print();
         }
 
         PyObject* pyModule = PyImport_ImportModule(name.c_str());

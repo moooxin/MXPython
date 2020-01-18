@@ -50,25 +50,36 @@ namespace mxpy
                 RETURN_RESULT(false);
             }
 
+            PyErr_Clear();
             std::string dir, name;
             if (!mxtoolkit::Path::GetFilePathInfo(file, &dir, &name, nullptr))
             {
                 RETURN_RESULT(false);
             }
 
+            PyRun_SimpleString("import os,sys");
+
             if (dir.empty())
             {
                 PyRun_SimpleString("sys.path.append('./')");
+                PyErr_Print();
             }
             else
             {
+                int pos = dir.rfind(L'\\');
                 int len = dir.length();
-                if (dir.at(len - 1) == '\\')
-                    dir.resize(dir.length() - 1);
+                while (pos != std::wstring::npos && pos == (len - 1))
+                {
+                    dir.resize(dir.size() - 1);
+                    pos = dir.rfind(L'\\');
+                    len = dir.length();
+                }
 
+                mxtoolkit::ReplaceString<std::string>(dir, "\\", "/");
                 std::string pyCmd = "sys.path.append('" + dir;
                 pyCmd += "')";
                 PyRun_SimpleString(pyCmd.c_str());
+                PyErr_Print();
             }
 
             PyObject* pyModule = PyImport_ImportModule(name.c_str());

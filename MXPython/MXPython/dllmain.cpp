@@ -4,6 +4,7 @@
 #include "MXLock.h"
 
 #include "Win32PathUtil.h"
+#include "Win32ConsoleWindow.h"
 
 #include "MXSpdlog.h"
 
@@ -57,6 +58,7 @@ namespace mxpy
         mxtoolkit::Win32App<std::string>::CreateDirectory(fileDir);
         
         //MX_INIT_LOG(fileDir, "MXPython");
+        mxtoolkit::InitConsoleWindow();
 
 #if _PY_VER_==37
         //--------------
@@ -113,7 +115,11 @@ namespace mxpy
         {
             if (strcmp(item.name, info->name) == 0 && strcmp(item.version, info->version) == 0)
             {
-                *it = (void*)dynamic_cast<IMXPython37*>(MXPython37::GetInstance());
+                if (strcmp(item.name, "MXPython37") == 0)
+                    *it = (void*)dynamic_cast<IMXPython37*>(MXPython37::GetInstance());
+                if (strcmp(item.name, "MXPythonUtil") == 0)
+                    *it = (void*)dynamic_cast<IMXPythonUtil*>(MXPythonUtil::GetInstance());
+
                 RETURN_RESULT(true);
             }
         }
