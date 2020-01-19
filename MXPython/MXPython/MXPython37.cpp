@@ -6,6 +6,8 @@
 #include "MXPath.h"
 #include "MXPyGILUtil.h"
 
+#include "Win32FileCertUtil.h"
+
 namespace mxpy
 {
 
@@ -23,27 +25,24 @@ namespace mxpy
 
     mxtoolkit::Result MXPython37::Initialize(const char* dir)
     {
-		//WCHAR filePath[MAX_PATH];
-		//::GetModuleFileNameW(NULL, filePath, MAX_PATH);
-		//::PathRemoveFileSpecW(filePath);
-
+        if (!mxtoolkit::FolderExist<>(dir))
+        {
+            RETURN_RESULT(false);
+        }
+                
         std::wstring path;
         mxtoolkit::WAConvert<std::string,std::wstring>(dir, &path);
+        
+        Py_SetPythonHome(path.c_str());
 
-		std::wstring python_home(path.c_str());
-//         int pos = python_home.rfind(L'\\');
-//         int len = python_home.length();
-//         while (pos != std::wstring::npos && pos == (len-1))
-//         {
-//             python_home.resize(python_home.size() - 1);
-//             pos = python_home.rfind(L'\\');
-//             len = python_home.length();
-//         }
-//         python_home += L"\\ph37\\";
+        try
+        {
+            Py_Initialize();
+        }
+        catch (...)
+        {
+        }
 
-        Py_SetPythonHome(python_home.c_str());
-
-		Py_Initialize();
 		int ret = Py_IsInitialized();
 		if (ret == 0)
 		{
@@ -54,7 +53,7 @@ namespace mxpy
 			RETURN_RESULT(false);
 		}
 
-        mxtoolkit::WAConvert<std::wstring, std::string>(python_home.c_str(), &m_homePath);
+        mxtoolkit::WAConvert<std::wstring, std::string>(path.c_str(), &m_homePath);
         InitMXPy(Py_GetVersion(), m_homePath.c_str());
 
         printf("MXPython37::Initialize Completed !\n");
@@ -222,9 +221,7 @@ namespace mxpy
         }
         else
         {
-            int len = dir.length();
-            if (dir.at(len - 1) == '\\')
-                dir.resize(dir.length() - 1);
+            mxtoolkit::EraseLastString<std::string>(dir, _MX_DIR_STRING_A);
 
             mxtoolkit::ReplaceString<std::string>(dir, "\\", "/");
             std::string pyCmd = "sys.path.append('" + dir;

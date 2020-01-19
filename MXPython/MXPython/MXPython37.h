@@ -8,6 +8,7 @@
 #include "IMXPython.h"
 #include "Python.h"
 #include "MXPy.h"
+#include "MXStringKit.h"
 
 namespace mxpy
 {
@@ -66,14 +67,7 @@ namespace mxpy
             }
             else
             {
-                int pos = dir.rfind(L'\\');
-                int len = dir.length();
-                while (pos != std::wstring::npos && pos == (len - 1))
-                {
-                    dir.resize(dir.size() - 1);
-                    pos = dir.rfind(L'\\');
-                    len = dir.length();
-                }
+                mxtoolkit::EraseLastString<std::string>(dir, _MX_DIR_STRING_A);
 
                 mxtoolkit::ReplaceString<std::string>(dir, "\\", "/");
                 std::string pyCmd = "sys.path.append('" + dir;
