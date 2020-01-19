@@ -37,6 +37,8 @@ namespace mxtoolkit
     std::shared_ptr<spdlog::logger> static_spdlog = nullptr;
 }
 
+
+
 //导出接口对象接口定义
 namespace mxpy
 {
@@ -57,8 +59,7 @@ namespace mxpy
         fileDir += mxtoolkit::MXTimeDate::ToString<std::string>("\\log\\%Y-%m-%d\\");
         mxtoolkit::Win32App<std::string>::CreateDirectory(fileDir);
         
-        //MX_INIT_LOG(fileDir, "MXPython");
-        mxtoolkit::InitConsoleWindow();
+        //MX_INIT_LOG(fileDir, "MXPython"); 
 
 #if _PY_VER_==37
         //--------------
