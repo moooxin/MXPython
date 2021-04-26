@@ -4,14 +4,14 @@
 namespace mxpy
 {
 	template<typename mx_py>
-	class MXPy
+	class PythonConfig
 	{
 	public:
 		static const char* GetVersion() { return m_version.c_str(); }
 		static const char* GetHomePath() { return m_homePath.c_str(); }
 
 	protected:
-        static void InitMXPy(const char* ver, const char* home)
+        static void InitConfig(const char* ver, const char* home)
         {
             m_version = ver;
             m_homePath = home;
@@ -23,9 +23,9 @@ namespace mxpy
 	};
 
 	template<typename mx_py>
-	std::string MXPy<mx_py>::m_homePath;
+	std::string PythonConfig<mx_py>::m_homePath;
 
 	template<typename mx_py>
-	std::string MXPy<mx_py>::m_version;
+	std::string PythonConfig<mx_py>::m_version;
 
 }

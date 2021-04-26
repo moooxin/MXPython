@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include "Python.h"
-#include "MXStringKit.h"
+#include "base/string_convert.h"
 
 
 #include <Shlwapi.h>
@@ -26,10 +26,12 @@ int main(int argc, char* argv[])
 
     std::string s = "dasdas";
     std::wstring ss;
-    mxtoolkit::WAConvert<std::string,std::wstring>(s.c_str(), &ss);
+    //mxkit::WAConvert<std::string,std::wstring>(s.c_str(), &ss);
+    mxkit::Win32StringConvert::AnsiiToUnicode(s.c_str(), ss);
     std::wcout << ss << std::endl;
     std::string sss;
-    mxtoolkit::WAConvert<std::wstring,std::string>(ss.c_str(), &sss);
+    //mxkit::WAConvert<std::wstring, std::string>(ss.c_str(), &sss);
+    mxkit::Win32StringConvert::UnicodeToAnsii(ss.c_str(), sss);
     std::cout << sss << std::endl;
 
 

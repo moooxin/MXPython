@@ -2,32 +2,33 @@
 //
 
 #include <iostream>
-#include "MXDllExportDefine.h"
+#include "mxkit_library.h"
 #include "IMXPython.h"
 
-#include "Win32PathUtil.h"
+#include "base/path_utils.h"
 
-
+#include "win32/win_path.h"
 
 int main()
 {
     std::cout << "Hello World!\n";
 
     
-    mxtoolkit::MXDllObject mxDllObj;
-    HMODULE mxDll = MXInitDll(mxDllObj, "MXPython.dll");
+    mxkit::LibraryObject mxDllObj;
+    mxkit::HModule mxModule = mxkit::LoadLibrary<std::string>(mxDllObj, "MXPython.dll");
+    //MX_LOAD_LIBRARY_OBJECT(mxDllObj, "MXPython.dll");
 
     std::cout << "GetLastError: " << (int)GetLastError << std::endl;
     if (mxDllObj.dllInit)
         mxDllObj.dllInit();
 
-    mxtoolkit::MXDllExportInfo* all_export = nullptr;
+    mxkit::ExportInfo* all_export = nullptr;
     if (mxDllObj.getExportInfo)
     {
         mxDllObj.getExportInfo(&all_export);
     }
 
-    mxtoolkit::MXInterfaceInfo info = *all_export->interfaceInfo;
+    mxkit::InterfaceInfo info = *all_export->interfaceInfo;
 
     mxpy::IMXPython37* py37 = nullptr;
     if (mxDllObj.getInterfaceInfo)
@@ -36,7 +37,7 @@ int main()
             return 0;
     }
 
-    std::string exeDir = mxtoolkit::Win32App<std::string>::CurrentDirectory();
+    std::string exeDir = mxkit::Win32Path<std::string>::CurrentDirectory();
     exeDir += "ph37\\";
     if (py37->Initialize(exeDir.c_str()))
     {
@@ -65,7 +66,7 @@ int main()
 
     mxDllObj.dllUninit();
 
-    FreeLibrary(mxDll);
+    mxkit::FreeLibrary<true>(mxModule);
 
     int i;
     std::cin >> i;

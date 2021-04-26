@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="win32">
-      <UniqueIdentifier>{12d5f8ab-e081-4e22-bf64-b6cfc2a26d24}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{e3e83f41-51c9-494e-956e-3dedffd48b23}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -33,11 +27,8 @@
     <ClInclude Include="MXPython27.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MXPy.h">
+    <ClInclude Include="PythonConfig.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\MXToolkit\win32\Win32Module.h">
-      <Filter>win32</Filter>
     </ClInclude>
     <ClInclude Include="IMXPython.h">
       <Filter>头文件</Filter>
@@ -45,10 +36,7 @@
     <ClInclude Include="MXPythonUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\MXToolkit\common\MXPath.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="MXPyGILUtil.h">
+    <ClInclude Include="PyGILUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,10 +56,7 @@
     <ClCompile Include="MXPythonUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\MXToolkit\common\MXPath.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="MXPyGILUtil.cpp">
+    <ClCompile Include="PyGILUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

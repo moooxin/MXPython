@@ -3,11 +3,11 @@
 
 namespace mxpy
 {
-    class MXPyGILUtil
+    class PyGILUtil
     {
     public:
-        MXPyGILUtil();
-        ~MXPyGILUtil();
+        PyGILUtil();
+        ~PyGILUtil();
 
     private:
         PyGILState_STATE    m_state;

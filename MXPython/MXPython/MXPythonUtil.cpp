@@ -5,7 +5,7 @@ namespace mxpy
 {
 
 
-    mxtoolkit::Result MXPythonUtil::ReleaseString(char* buffer)
+    mxkit::Result MXPythonUtil::ReleaseString(char* buffer)
     {
         if(buffer)
             delete[] buffer;
@@ -18,7 +18,7 @@ namespace mxpy
         if (!str)
             return nullptr;
 
-        int size = strlen(str) + 1;
+        size_t size = strlen(str) + 1;
         if (size <= 1)
             return nullptr;
 

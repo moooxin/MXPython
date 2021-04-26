@@ -1,11 +1,11 @@
 ﻿#include "stdafx.h"
-#include "MXPyGILUtil.h"
+#include "PyGILUtil.h"
 #include "Python.h"
 #include "pystate.h"
 
 namespace mxpy
 {
-    MXPyGILUtil::MXPyGILUtil()
+    PyGILUtil::PyGILUtil()
     {
         m_state = PyGILState_Ensure(); //申请获取GIL
 
@@ -13,7 +13,7 @@ namespace mxpy
         PyEval_RestoreThread(m_save);
     }
 
-    MXPyGILUtil::~MXPyGILUtil()
+    PyGILUtil::~PyGILUtil()
     {
         if (m_state)
         {

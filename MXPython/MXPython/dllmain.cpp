@@ -1,12 +1,16 @@
 ﻿// dllmain.cpp : 定义 DLL 应用程序的入口点。
 #include "stdafx.h"
-#include "MXDllExportDefine.h"
-#include "MXLock.h"
 
-#include "Win32PathUtil.h"
-#include "Win32ConsoleWindow.h"
+#include "mxkit.h"
+#include "mxkit_library.h"
+#include "base/auto_locker.h"
 
-#include "MXSpdlog.h"
+#include "base/path_utils.h"
+#include "base/time_utils.h"
+#include "spdlog/utils.h"
+#include "win32/console_window.h"
+#include "win32/file_utils.h"
+#include "win32/win_path.h"
 
 #include "MXPython37.h"
 #include "MXPythonUtil.h"
@@ -32,7 +36,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 
 //声明一个日志
-namespace mxtoolkit
+namespace mxkit
 {
     std::shared_ptr<spdlog::logger> static_spdlog = nullptr;
 }
@@ -43,58 +47,59 @@ namespace mxtoolkit
 namespace mxpy
 {
     static std::string DLL_VERSION = "202001121800";
-    static std::recursive_mutex EXPORT_FUNCTION_MUTEX;
+    static std::recursive_mutex DLL_EXPORT_FUNCTION_MUTEX;
 
-    static mxtoolkit::MXDllExportInfo DLL_EXPORT_INFO;
-    static std::vector<mxtoolkit::MXInterfaceInfo> EXPORT_INTERFACE_LIST;
+    static mxkit::ExportInfo DLL_EXPORT_INFO;
+    static std::vector<mxkit::InterfaceInfo> DLL_EXPORT_INTERFACE_LIST;
 
-    MX_C_EXPORT mxtoolkit::Result mxDllInit()
+    _MX_C_EXPORT mxkit::Result InitLibrary()
     {
-        mxtoolkit::MXAutoLock aLock(EXPORT_FUNCTION_MUTEX);
+        mxkit::AutoLocker aLock(DLL_EXPORT_FUNCTION_MUTEX);
 
         if (DLL_EXPORT_INFO.version && DLL_EXPORT_INFO.interfaceInfo)
             RETURN_RESULT(true);
 
-        std::string fileDir(mxtoolkit::Win32App<std::string>::GetModuleDirectory(g_hModule));
-        fileDir += mxtoolkit::MXTimeDate::ToString<std::string>("\\log\\%Y-%m-%d\\");
-        mxtoolkit::Win32App<std::string>::CreateDirectory(fileDir);
+        std::string fileDir(mxkit::Win32Path<std::string>::ModuleDirectory(g_hModule));
+        fileDir += mxkit::TimeUtils::ToString<std::string>("\\log\\%Y-%m-%d\\");
+        mxkit::FileSystem::CreateFolder<std::string>(fileDir);
         
-        //MX_INIT_LOG(fileDir, "MXPython"); 
+        _MX_LOG_INIT_LOG(fileDir, "MXPython"); 
 
 #if _PY_VER_==37
         //--------------
-        MXPython37::GetInstance()->InitInterface(DLL_VERSION.c_str());
-        EXPORT_INTERFACE_LIST.push_back(MXPython37::GetInstance()->GetInterfaceInfo());
+        MXPython37::Instance()->InitInterface(DLL_VERSION.c_str());
+        DLL_EXPORT_INTERFACE_LIST.push_back(MXPython37::Instance()->Interface());
 #endif
 
         //--------------
-        MXPythonUtil::GetInstance()->InitInterface(DLL_VERSION.c_str());
-        EXPORT_INTERFACE_LIST.push_back(MXPythonUtil::GetInstance()->GetInterfaceInfo());
+        MXPythonUtil::Instance()->InitInterface(DLL_VERSION.c_str());
+        DLL_EXPORT_INTERFACE_LIST.push_back(MXPythonUtil::Instance()->Interface());
 
         //--------------
-        DLL_EXPORT_INFO.interfaceCount = EXPORT_INTERFACE_LIST.size();
+        DLL_EXPORT_INFO.interfaceCount = (mxkit::uint32)DLL_EXPORT_INTERFACE_LIST.size();
         DLL_EXPORT_INFO.version = DLL_VERSION.c_str();//当前时间戳
-        DLL_EXPORT_INFO.interfaceInfo = &EXPORT_INTERFACE_LIST[0];
+        DLL_EXPORT_INFO.interfaceInfo = &DLL_EXPORT_INTERFACE_LIST[0];
 
         RETURN_RESULT(true);
     }
 
-    MX_C_EXPORT mxtoolkit::Result mxDllUninit()
+    _MX_C_EXPORT mxkit::Result mxDllUninit()
     {
-        mxtoolkit::MXAutoLock aLock(EXPORT_FUNCTION_MUTEX);
+        mxkit::AutoLocker aLock(DLL_EXPORT_FUNCTION_MUTEX);
 
 #if _PY_VER_==37
-        MXPython37::GetInstance()->Uninstall();
+        MXPython37::Instance()->Uninstall();
         MXPython37::DestroyInstance();
 #endif
 
-        MX_RELEASE_LOG();
+        _MX_LOG_RELEASE_LOG();
+
         RETURN_RESULT(true);
     }
 
-    MX_C_EXPORT mxtoolkit::Result mxGetExportInfo(mxtoolkit::MXDllExportInfo **exp)
+    _MX_C_EXPORT mxkit::Result QueryExportInfo(mxkit::ExportInfo **exp)
     {
-        mxtoolkit::MXAutoLock aLock(EXPORT_FUNCTION_MUTEX);
+        mxkit::AutoLocker aLock(DLL_EXPORT_FUNCTION_MUTEX);
 
         if (exp)
         {
@@ -105,21 +110,21 @@ namespace mxpy
         RETURN_RESULT(false);
     }
 
-    MX_C_EXPORT mxtoolkit::Result mxGetInterfaceInfo(const mxtoolkit::MXInterfaceInfo* info, void** it)
+    _MX_C_EXPORT mxkit::Result QueryInterface(const mxkit::InterfaceInfo* info, void** it)
     {
-        mxtoolkit::MXAutoLock aLock(EXPORT_FUNCTION_MUTEX);
+        mxkit::AutoLocker aLock(DLL_EXPORT_FUNCTION_MUTEX);
 
         if (!info || !info->name || !info->version || !it)
             RETURN_RESULT(false);
 
-        for (auto item : EXPORT_INTERFACE_LIST)
+        for (auto item : DLL_EXPORT_INTERFACE_LIST)
         {
             if (strcmp(item.name, info->name) == 0 && strcmp(item.version, info->version) == 0)
             {
                 if (strcmp(item.name, "MXPython37") == 0)
-                    *it = (void*)dynamic_cast<IMXPython37*>(MXPython37::GetInstance());
+                    *it = (void*)dynamic_cast<IMXPython37*>(MXPython37::Instance());
                 if (strcmp(item.name, "MXPythonUtil") == 0)
-                    *it = (void*)dynamic_cast<IMXPythonUtil*>(MXPythonUtil::GetInstance());
+                    *it = (void*)dynamic_cast<IMXPythonUtil*>(MXPythonUtil::Instance());
 
                 RETURN_RESULT(true);
             }

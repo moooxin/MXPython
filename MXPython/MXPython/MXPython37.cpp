@@ -1,12 +1,12 @@
 ﻿#include "stdafx.h"
 #if _PY_VER_==37
 #include "MXPython37.h"
-#include "MXStringKit.h"
+#include "base/string_convert.h"
+#include "base/path_utils.h"
 #include "MXPythonUtil.h"
-#include "MXPath.h"
-#include "MXPyGILUtil.h"
+#include "PyGILUtil.h"
 
-#include "Win32FileCertUtil.h"
+#include "win32/file_utils.h"
 
 namespace mxpy
 {
@@ -23,16 +23,17 @@ namespace mxpy
 			Py_Finalize();
 	}
 
-    mxtoolkit::Result MXPython37::Initialize(const char* dir)
+    mxkit::Result MXPython37::Initialize(const char* dir)
     {
-        if (!mxtoolkit::FolderExist<>(dir))
+        if (mxkit::FileSystem::FileType<>(dir) != mxkit::FileSystem::FOLDER)
         {
             RETURN_RESULT(false);
         }
                 
         std::wstring path;
-        mxtoolkit::WAConvert<std::string,std::wstring>(dir, &path);
-        
+        //mxkit::WAConvert<std::string,std::wstring>(dir, &path);
+        mxkit::Win32StringConvert::Utf8ToUnicode(dir, path);
+
         Py_SetPythonHome(path.c_str());
 
         try
@@ -53,8 +54,9 @@ namespace mxpy
 			RETURN_RESULT(false);
 		}
 
-        mxtoolkit::WAConvert<std::wstring, std::string>(path.c_str(), &m_homePath);
-        InitMXPy(Py_GetVersion(), m_homePath.c_str());
+        //mxkit::WAConvert<std::wstring, std::string>(path.c_str(), &m_homePath);
+        mxkit::Win32StringConvert::UnicodeToAnsii(path.c_str(), m_homePath);
+        InitConfig(Py_GetVersion(), m_homePath.c_str());
 
         printf("MXPython37::Initialize Completed !\n");
         printf("Python Version : %s\n", m_version.c_str());
@@ -63,20 +65,20 @@ namespace mxpy
 		RETURN_RESULT(true);
 	}
 
-    mxtoolkit::Result MXPython37::Uninstall()
+    mxkit::Result MXPython37::Uninstall()
     {
         if (Py_IsInitialized())
         {
-            MXPyGILUtil pyGILUtil;
+            PyGILUtil pyGILUtil;
             Py_Finalize();
         }
 
         RETURN_RESULT(true);
     }
 
-    mxtoolkit::Result MXPython37::ExcuteFile(const char* file)
+    mxkit::Result MXPython37::ExcuteFile(const char* file)
     {
-        MXPyGILUtil pyGILUtil;
+        PyGILUtil pyGILUtil;
         printf("MXPython37::ExcuteFile:%s.\n", file);
 
         if (!Py_IsInitialized())
@@ -95,7 +97,7 @@ namespace mxpy
         RETURN_RESULT(true);
 	}
 
-    mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, int param, int* result)
+    mxkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, int param, int* result)
     {
         return CallMethod<int>(file, method, "i", param, [&](PyObject* retValue)
         {
@@ -108,11 +110,11 @@ namespace mxpy
         });
     }
 
-    mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, int* result, const char* paramFormat, ...)
+    mxkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, int* result, const char* paramFormat, ...)
     {
         va_list paramList = nullptr;
         va_start(paramList, paramFormat);
-        mxtoolkit::Result rt = CallMethod(file, method, paramFormat, &paramList, [&](PyObject* retValue)
+        mxkit::Result rt = CallMethod(file, method, paramFormat, &paramList, [&](PyObject* retValue)
         {
             int retVal = 0;
             if (retValue && result)
@@ -126,7 +128,7 @@ namespace mxpy
         return rt;
     }
 
-    mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, float param, float* result)
+    mxkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, float param, float* result)
     {
         return CallMethod<float>(file, method, "f", param, [&](PyObject* retValue)
         {
@@ -139,12 +141,12 @@ namespace mxpy
         });
     }
 
-    mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, float* result, const char* paramFormat, ...)
+    mxkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, float* result, const char* paramFormat, ...)
     {
         va_list paramList = nullptr;
         va_start(paramList, paramFormat);
 
-        mxtoolkit::Result rt = CallMethod(file, method, paramFormat, &paramList, [&](PyObject* retValue)
+        mxkit::Result rt = CallMethod(file, method, paramFormat, &paramList, [&](PyObject* retValue)
         {
             float retVal = 0.0;
             if (retValue && result)
@@ -158,7 +160,7 @@ namespace mxpy
         return rt;
     }
 
-    mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, const char* param, char** result)
+    mxkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, const char* param, char** result)
     {
         return CallMethod<const char*>(file, method, "s", param, [&](PyObject* retValue)
         {
@@ -167,32 +169,32 @@ namespace mxpy
                 PyArg_Parse(retValue, "s", &retVal);
 
             if (retVal && result)
-                *result = MXPythonUtil::GetInstance()->AllocString(retVal);
+                *result = MXPythonUtil::Instance()->AllocString(retVal);
         });
     }
 
-    mxtoolkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, char** result, const char* paramFormat, ...)
+    mxkit::Result MXPython37::ExcuteMethod(const char* file, const char* method, char** result, const char* paramFormat, ...)
     {
         va_list paramList = nullptr;
         va_start(paramList, paramFormat);
 
-        mxtoolkit::Result rt = CallMethod(file, method, paramFormat, &paramList, [&](PyObject* retValue)
+        mxkit::Result rt = CallMethod(file, method, paramFormat, &paramList, [&](PyObject* retValue)
         {
             char* retVal = nullptr;
             if (retValue && result)
                 PyArg_Parse(retValue, "s", &retVal);
 
             if (retVal && result)
-                *result = MXPythonUtil::GetInstance()->AllocString(retVal);
+                *result = MXPythonUtil::Instance()->AllocString(retVal);
         });
 
         va_end(paramList);
         return rt;
     }
 
-    mxtoolkit::Result MXPython37::CallMethod(const char* file, const char* method, const char* paramFormat, va_list* paramList, std::function<void(PyObject*)> resultFunction)
+    mxkit::Result MXPython37::CallMethod(const char* file, const char* method, const char* paramFormat, va_list* paramList, std::function<void(PyObject*)> resultFunction)
     {
-        MXPyGILUtil pyGILUtil;
+        PyGILUtil pyGILUtil;
         printf("MXPython37::ExcuteMethod file:%s, method:%s.\n", file, method);
 
         if (!paramFormat)
@@ -207,7 +209,7 @@ namespace mxpy
 
         PyErr_Clear();
         std::string dir, name;
-        if (!mxtoolkit::Path::GetFilePathInfo(file, &dir, &name, nullptr))
+        if (!mxkit::PathUtils::FileInfo<std::string>(file, &dir, &name, nullptr))
         {
             RETURN_RESULT(false);
         }
@@ -221,9 +223,9 @@ namespace mxpy
         }
         else
         {
-            mxtoolkit::EraseLastString<std::string>(dir, _MX_DIR_STRING_A);
+            mxkit::StringUtils::EraseLast<std::string>(dir, _MX_DIR_STRING_A);
 
-            mxtoolkit::ReplaceString<std::string>(dir, "\\", "/");
+            mxkit::StringUtils::Replace<std::string>(dir, "\\", "/");
             std::string pyCmd = "sys.path.append('" + dir;
             pyCmd += "')";
             PyRun_SimpleString(pyCmd.c_str());
@@ -253,10 +255,10 @@ namespace mxpy
         }
 
         //调用函数 --------
-        std::vector<mxtoolkit::uint64> params;
+        std::vector<mxkit::uint64> params;
         int loopCnt = paramCount;
         while (loopCnt--)
-            params.push_back(va_arg(*paramList, mxtoolkit::uint64));
+            params.push_back(va_arg(*paramList, mxkit::uint64));
 
         PyObject* retValue = nullptr;
 
