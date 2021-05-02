@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
-#include "Python3.7.1/dev/include/python.h"
+#include "Python3.7.1/include/python.h"
 
 
 #include "PythonApi.h"
