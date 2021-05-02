@@ -21,22 +21,28 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MXPython37.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MXPython27.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="PythonConfig.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="IMXPython.h">
+    <ClInclude Include="IPython.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MXPythonUtil.h">
+    <ClInclude Include="PythonUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PyGILUtil.h">
+    <ClInclude Include="Python3Api.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PythonApi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Python27.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Python3X.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Python2Api.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,16 +53,22 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MXPython37.cpp">
+    <ClCompile Include="Python3X.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MXPython27.cpp">
+    <ClCompile Include="Python27.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MXPythonUtil.cpp">
+    <ClCompile Include="PythonUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PyGILUtil.cpp">
+    <ClCompile Include="PythonApi.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Python3Api.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Python2Api.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

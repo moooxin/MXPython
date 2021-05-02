@@ -12,11 +12,13 @@
 #include "win32/file_utils.h"
 #include "win32/win_path.h"
 
-#include "MXPython37.h"
-#include "MXPythonUtil.h"
+#include "Python27.h"
+#include "Python3X.h"
+#include "PythonUtils.h"
 
 HMODULE g_hModule;
 
+#define _CLASS_TO_STRING(c) #c
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -44,7 +46,7 @@ namespace mxkit
 
 
 //导出接口对象接口定义
-namespace mxpy
+namespace mx
 {
     static std::string DLL_VERSION = "202001121800";
     static std::recursive_mutex DLL_EXPORT_FUNCTION_MUTEX;
@@ -65,15 +67,9 @@ namespace mxpy
         
         _MX_LOG_INIT_LOG(fileDir, "MXPython"); 
 
-#if _PY_VER_==37
         //--------------
-        MXPython37::Instance()->InitInterface(DLL_VERSION.c_str());
-        DLL_EXPORT_INTERFACE_LIST.push_back(MXPython37::Instance()->Interface());
-#endif
-
-        //--------------
-        MXPythonUtil::Instance()->InitInterface(DLL_VERSION.c_str());
-        DLL_EXPORT_INTERFACE_LIST.push_back(MXPythonUtil::Instance()->Interface());
+        PythonUtils::Instance()->InitInterface(DLL_VERSION.c_str());
+        DLL_EXPORT_INTERFACE_LIST.push_back(PythonUtils::Instance()->Interface());
 
         //--------------
         DLL_EXPORT_INFO.interfaceCount = (mxkit::uint32)DLL_EXPORT_INTERFACE_LIST.size();
@@ -83,21 +79,16 @@ namespace mxpy
         RETURN_RESULT(true);
     }
 
-    _MX_C_EXPORT mxkit::Result mxDllUninit()
+    _MX_C_EXPORT mxkit::Result UninitLibrary()
     {
         mxkit::AutoLocker aLock(DLL_EXPORT_FUNCTION_MUTEX);
-
-#if _PY_VER_==37
-        MXPython37::Instance()->Uninstall();
-        MXPython37::DestroyInstance();
-#endif
 
         _MX_LOG_RELEASE_LOG();
 
         RETURN_RESULT(true);
     }
 
-    _MX_C_EXPORT mxkit::Result QueryExportInfo(mxkit::ExportInfo **exp)
+    _MX_C_EXPORT mxkit::Result QueryExport(mxkit::ExportInfo **exp)
     {
         mxkit::AutoLocker aLock(DLL_EXPORT_FUNCTION_MUTEX);
 
@@ -121,11 +112,9 @@ namespace mxpy
         {
             if (strcmp(item.name, info->name) == 0 && strcmp(item.version, info->version) == 0)
             {
-                if (strcmp(item.name, "MXPython37") == 0)
-                    *it = (void*)dynamic_cast<IMXPython37*>(MXPython37::Instance());
-                if (strcmp(item.name, "MXPythonUtil") == 0)
-                    *it = (void*)dynamic_cast<IMXPythonUtil*>(MXPythonUtil::Instance());
-
+                if (PythonUtils::Instance()->Interface().name == item.name)
+                    *it = (void*)dynamic_cast<IPythonUtils*>(PythonUtils::Instance());
+                
                 RETURN_RESULT(true);
             }
         }

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "mxkit_library.h"
-#include "IMXPython.h"
+#include "IPython.h"
 
 #include "base/path_utils.h"
 
@@ -18,34 +18,49 @@ int main()
     mxkit::HModule mxModule = mxkit::LoadLibrary<std::string>(mxDllObj, "MXPython.dll");
     //MX_LOAD_LIBRARY_OBJECT(mxDllObj, "MXPython.dll");
 
-    std::cout << "GetLastError: " << (int)GetLastError << std::endl;
-    if (mxDllObj.dllInit)
-        mxDllObj.dllInit();
+    std::cout << "GetLastError: " << (int)GetLastError() << std::endl;
+    if (mxDllObj.init)
+        mxDllObj.init();
 
     mxkit::ExportInfo* all_export = nullptr;
-    if (mxDllObj.getExportInfo)
+    if (mxDllObj.queryExport)
     {
-        mxDllObj.getExportInfo(&all_export);
+        mxDllObj.queryExport(&all_export);
     }
 
     mxkit::InterfaceInfo info = *all_export->interfaceInfo;
 
-    mxpy::IMXPython37* py37 = nullptr;
-    if (mxDllObj.getInterfaceInfo)
+    mx::IPythonUtils* pyUtils = nullptr;
+    if (mxDllObj.queryInterface)
     {
-        if (!mxDllObj.getInterfaceInfo(&info, (void**)&py37))
+        mxkit::Result r = mxDllObj.queryInterface(&info, (void**)&pyUtils);
+        if (!mxkit::ResultUtils::Success(r))
             return 0;
     }
 
     std::string exeDir = mxkit::Win32Path<std::string>::CurrentDirectory();
-    exeDir += "ph37\\";
-    if (py37->Initialize(exeDir.c_str()))
-    {
-        std::string file = exeDir + "testMain.py";
-        //py37->ExcuteFile(file.c_str());
-        file = exeDir + "test123.py";
+    exeDir += "..\\";
 
-        py37->ExcuteMethod("C:\\Users\\mx\\Desktop\\GitHub\\MXMoney\\py\\danjuan_zuhe.py", "get_all_zuhe", "dsadas", nullptr);
+    mx::IPython* py37 = nullptr;
+    pyUtils->Alloc(
+        "C:\\Users\\muxin\\Desktop\\GitHub\\MXPython\\Python3.7.1\\python37.dll",
+        "C:\\Users\\muxin\\Desktop\\GitHub\\MXPython\\Python3.7.1\\",
+        &py37);
+
+    mx::IPython* py27 = nullptr;
+    pyUtils->Alloc(
+        "C:\\Users\\muxin\\Desktop\\GitHub\\MXPython\\Python2.7.13\\python27.dll",
+        "C:\\Users\\muxin\\Desktop\\GitHub\\MXPython\\Python2.7.13\\",
+        &py27);
+
+    std::string file = exeDir + "test.py";
+    if (py37)
+    {
+        py37->ExcuteFile(file.c_str());
+        //file = "C:\\Users\\muxin\\Desktop\\p.py";
+        //py37->ExcuteFile(file.c_str());
+
+        //py37->ExcuteMethod("C:\\Users\\mx\\Desktop\\GitHub\\MXMoney\\py\\danjuan_zuhe.py", "get_all_zuhe", "dsadas", nullptr);
 //        py37->ExcuteMethod(file.c_str(), "Hello", nullptr, nullptr);
 //
 //         char* ret = nullptr;
@@ -62,14 +77,21 @@ int main()
         //py37->ExcuteMethod(file.c_str(), "testAdd", ii, 3, nullptr);
     }
 
-    py37->Uninstall();
+    if (py27)
+        py27->ExcuteFile(file.c_str());
 
-    mxDllObj.dllUninit();
+    if(py37)
+        py37->Release();
+
+    if (py27)
+        py27->Release();
+
+    mxDllObj.uninit();
 
     mxkit::FreeLibrary<true>(mxModule);
 
-    int i;
-    std::cin >> i;
+    ::system("pause");
+
     return 0;
 }
 

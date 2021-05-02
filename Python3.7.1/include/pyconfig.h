@@ -1,4 +1,4 @@
-#ifndef Py_CONFIG_H
+﻿#ifndef Py_CONFIG_H
 #define Py_CONFIG_H
 
 /* pyconfig.h.  NOT Generated automatically by configure.

@@ -27,3 +27,7 @@ foo.txt
 .vscode/
 .vs/
 vld.txt
+
+Python3.7.1/DLLs/
+Python3.7.1/lib/
+python2.7.13/lib/
